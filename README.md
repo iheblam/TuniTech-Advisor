@@ -98,9 +98,10 @@ python code/fill_missing_specs.py dataset/tunisianet_smartphones.csv
 - **Requests** - Requêtes HTTP
 - **Pandas** - Manipulation de données
 
-## 👥 Auteur
+## 👥 Équipe
 
-- **iheblam**
+- **Iheb Lamouchi**
+- **Yassine Nemri**
 
 ## 📄 Licence
 
