@@ -2,12 +2,12 @@
 
 ## 🎯 Objectif
 
-Ce projet a pour objectif de collecter, nettoyer et analyser les données des smartphones disponibles sur les principaux sites e-commerce tunisiens (**Tunisianet** et **Mytek**). Les données extraites permettent de créer un dataset complet pour l'analyse des prix, caractéristiques techniques et tendances du marché des smartphones en Tunisie.
+Ce projet a pour objectif de collecter, nettoyer et analyser les données des smartphones disponibles sur les principaux sites e-commerce tunisiens (**Tunisianet**, **Mytek** et **SpaceNet**). Les données extraites permettent de créer un dataset complet pour l'analyse des prix, caractéristiques techniques et tendances du marché des smartphones en Tunisie.
 
 ## 📋 Description
 
 Le projet comprend :
-- **Web Scraping** : Extraction automatisée des données produits depuis Tunisianet et Mytek
+- **Web Scraping** : Extraction automatisée des données produits depuis Tunisianet, Mytek et SpaceNet
 - **Nettoyage des données** : Parsing et normalisation des spécifications techniques
 - **Enrichissement** : Complétion des données manquantes via des sources externes (GSMArena)
 - **Export CSV** : Génération de datasets prêts pour l'analyse
@@ -25,6 +25,7 @@ Le projet comprend :
 ├── code/                    # Scripts Python
 │   ├── scrape_tunisianet_smartphones.py
 │   ├── scrape_mytek_smartphones.py
+│   ├── scrape_spacenet_smartphones.py
 │   └── fill_missing_specs.py
 ├── dataset/                 # Fichiers CSV
 │   ├── tunisianet_smartphones.csv
@@ -32,7 +33,8 @@ Le projet comprend :
 │   ├── tunisianet_smartphones_completed.csv
 │   ├── mytek_smartphones.csv
 │   ├── mytek_smartphones_filled.csv
-│   └── mytek_smartphones_complete.csv
+│   ├── mytek_smartphones_complete.csv
+│   └── spacenet_smartphones.csv
 ├── requirements.txt         # Dépendances Python
 └── README.md
 ```
@@ -59,6 +61,16 @@ python code/scrape_tunisianet_smartphones.py 2
 
 ```bash
 python code/scrape_mytek_smartphones.py
+```
+
+### Scraper SpaceNet
+
+```bash
+# Scraper toutes les pages (~320 produits)
+python code/scrape_spacenet_smartphones.py
+
+# Scraper les N premières pages (ex: 2 pages pour test)
+python code/scrape_spacenet_smartphones.py 2
 ```
 
 ### Compléter les données manquantes
