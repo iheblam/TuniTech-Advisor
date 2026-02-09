@@ -2,14 +2,14 @@
 
 ## 🎯 Objectif
 
-Ce projet a pour objectif de collecter, nettoyer et analyser les données des smartphones disponibles sur les principaux sites e-commerce tunisiens (**Tunisianet**, **Mytek** et **SpaceNet**). Les données extraites permettent de créer un dataset complet pour l'analyse des prix, caractéristiques techniques et tendances du marché des smartphones en Tunisie.
+Ce projet a pour objectif de collecter, nettoyer et analyser les données des smartphones disponibles sur les principaux sites e-commerce tunisiens (**Tunisianet**, **Mytek**, **SpaceNet** et **BestPhone**). Les données extraites permettent de créer un dataset complet pour l'analyse des prix, caractéristiques techniques et tendances du marché des smartphones en Tunisie.
 
 ## 📋 Description
 
 Le projet comprend :
-- **Web Scraping** : Extraction automatisée des données produits depuis Tunisianet, Mytek et SpaceNet
+- **Web Scraping** : Extraction automatisée des données produits depuis Tunisianet, Mytek, SpaceNet et BestPhone
 - **Nettoyage des données** : Parsing et normalisation des spécifications techniques
-- **Enrichissement** : Complétion des données manquantes via des sources externes (GSMArena)
+- **Enrichissement** : Complétion des données manquantes via des sources existantes
 - **Export CSV** : Génération de datasets prêts pour l'analyse
 
 ### Données collectées
@@ -26,16 +26,21 @@ Le projet comprend :
 │   ├── scrape_tunisianet_smartphones.py
 │   ├── scrape_mytek_smartphones.py
 │   ├── scrape_spacenet_smartphones.py
-│   └── fill_missing_specs.py
+│   ├── scrape_bestphone_smartphones.py
+│   ├── fill_missing_specs.py
+│   ├── fill_specs_from_existing.py
+│   └── fill_bestphone_specs.py
 ├── dataset/                 # Fichiers CSV
 │   ├── tunisianet_smartphones.csv
 │   ├── tunisianet_smartphones_filled.csv
-│   ├── tunisianet_smartphones_completed.csv
 │   ├── mytek_smartphones.csv
 │   ├── mytek_smartphones_filled.csv
-│   ├── mytek_smartphones_complete.csv
-│   └── spacenet_smartphones.csv
+│   ├── spacenet_smartphones.csv
+│   ├── spacenet_smartphones_filled.csv
+│   ├── bestphone_smartphones.csv
+│   └── bestphone_smartphones_filled.csv
 ├── requirements.txt         # Dépendances Python
+├── CONTRIBUTORS.md          # Contributeurs
 └── README.md
 ```
 
@@ -50,11 +55,7 @@ pip install -r requirements.txt
 ### Scraper Tunisianet
 
 ```bash
-# Scraper toutes les pages (~369 produits)
 python code/scrape_tunisianet_smartphones.py
-
-# Scraper les N premières pages (ex: 2 pages pour test)
-python code/scrape_tunisianet_smartphones.py 2
 ```
 
 ### Scraper Mytek
@@ -66,16 +67,23 @@ python code/scrape_mytek_smartphones.py
 ### Scraper SpaceNet
 
 ```bash
-# Scraper toutes les pages (~320 produits)
 python code/scrape_spacenet_smartphones.py
+```
 
-# Scraper les N premières pages (ex: 2 pages pour test)
-python code/scrape_spacenet_smartphones.py 2
+### Scraper BestPhone
+
+```bash
+python code/scrape_bestphone_smartphones.py
 ```
 
 ### Compléter les données manquantes
 
 ```bash
+# Enrichir avec données existantes (recommandé)
+python code/fill_specs_from_existing.py
+python code/fill_bestphone_specs.py
+
+# Enrichir via GSMArena (peut avoir des rate limits)
 python code/fill_missing_specs.py dataset/tunisianet_smartphones.csv
 ```
 
