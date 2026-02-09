@@ -72,30 +72,33 @@
 
 ### 📁 Week 1 Deliverables
 ```
-code/
-├── scrape_tunisianet_smartphones.py   # Tunisianet scraper
-├── scrape_mytek_smartphones.py        # Mytek scraper (Selenium)
-├── scrape_spacenet_smartphones.py     # SpaceNet scraper
-├── scrape_bestphone_smartphones.py    # BestPhone scraper
-├── fill_missing_specs.py              # GSMArena-based filling
-├── fill_specs_from_existing.py        # Cross-source matching
-├── fill_bestphone_specs.py            # BestPhone enrichment
-├── fill_bestphone_enhanced.py         # Improved fuzzy matching
-├── fill_known_specs.py                # Known specs database
-└── eda_analysis.py                    # Comprehensive EDA script
-
-dataset/
-├── tunisianet_smartphones.csv         # Raw data
-├── tunisianet_smartphones_filled.csv  # Enriched data
-├── mytek_smartphones.csv
-├── mytek_smartphones_filled.csv
-├── spacenet_smartphones.csv
-├── spacenet_smartphones_filled.csv
-├── bestphone_smartphones.csv
-├── bestphone_smartphones_filled.csv
-└── unified_smartphones.csv            # Combined dataset
-
-EDA_REPORT.md                          # EDA findings summary
+├── notebooks/
+│   └── 01_EDA.ipynb                   # Exploratory Data Analysis notebook
+│
+├── scrapers/
+│   ├── scrape_tunisianet_smartphones.py
+│   ├── scrape_mytek_smartphones.py
+│   ├── scrape_spacenet_smartphones.py
+│   ├── scrape_bestphone_smartphones.py
+│   ├── fill_missing_specs.py
+│   ├── fill_specs_from_existing.py
+│   ├── fill_bestphone_specs.py
+│   ├── fill_bestphone_enhanced.py
+│   └── fill_known_specs.py
+│
+├── dataset/
+│   ├── tunisianet_smartphones.csv
+│   ├── tunisianet_smartphones_filled.csv
+│   ├── mytek_smartphones.csv
+│   ├── mytek_smartphones_filled.csv
+│   ├── spacenet_smartphones.csv
+│   ├── spacenet_smartphones_filled.csv
+│   ├── bestphone_smartphones.csv
+│   ├── bestphone_smartphones_filled.csv
+│   └── unified_smartphones.csv
+│
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -195,16 +198,20 @@ pip install -r requirements.txt
 
 ```bash
 # Scrape all sources
-python code/scrape_tunisianet_smartphones.py
-python code/scrape_spacenet_smartphones.py
-python code/scrape_mytek_smartphones.py
-python code/scrape_bestphone_smartphones.py
+python scrapers/scrape_tunisianet_smartphones.py
+python scrapers/scrape_spacenet_smartphones.py
+python scrapers/scrape_mytek_smartphones.py
+python scrapers/scrape_bestphone_smartphones.py
 
 # Fill missing specs
-python code/fill_specs_from_existing.py
+python scrapers/fill_specs_from_existing.py
+```
 
-# Run EDA
-python code/eda_analysis.py
+### Running EDA Notebook
+
+```bash
+# Start Jupyter
+jupyter notebook notebooks/01_EDA.ipynb
 ```
 
 ---
