@@ -29,11 +29,11 @@
 | Week | Phase | Status | Description |
 |------|-------|--------|-------------|
 | 1 | Setup, Scraping & EDA | ✅ Complete | Project structure, web scrapers, data exploration |
-| 2 | Data Preprocessing & Feature Engineering | 🔄 In Progress | Cleaning, normalization, feature creation |
-| 3 | Model Development with MLflow | ⏳ Pending | Recommendation algorithm, experiment tracking |
-| 4 | FastAPI Backend | ⏳ Pending | REST API endpoints for recommendations |
-| 5 | React Frontend | ⏳ Pending | User interface with filtering and results display |
-| 6 | Docker & Integration | ⏳ Pending | Containerization and full stack integration |
+| 2 | ML Pipeline & Experiment Tracking | ✅ Complete | Preprocessing, feature engineering, model training, MLflow |
+| 3 | FastAPI Backend | 🔄 In Progress | REST API endpoints for recommendations |
+| 4 | React Frontend | ⏳ Pending | User interface with filtering and results display |
+| 5 | Docker & Integration | ⏳ Pending | Containerization and full stack integration |
+| 6 | Testing & Optimization | ⏳ Pending | Performance testing, bug fixes, optimization |
 | 7 | Deployment & Presentation | ⏳ Pending | Cloud deployment and final presentation |
 
 ---
@@ -103,21 +103,45 @@
 
 ---
 
+## � Week 2 Progress: ML Pipeline & Experiment Tracking
+
+### ✅ What We Accomplished
+
+#### 1. Complete ML Pipeline (5 Steps)
+- [x] **Step 1: Data Preprocessing** - KNNImputer + StandardScaler pipeline
+- [x] **Step 2: Feature Engineering** - Created 14 new features (value_score, price_tier, etc.)
+- [x] **Step 3: Feature Selection** - Reduced to 7 optimal features using correlation + RF importance
+- [x] **Step 4: Model Training** - Trained KNN, Random Forest, XGBoost
+- [x] **Step 5: MLflow Integration** - Complete experiment tracking setup
+
+#### 2. Model Performance
+| Model | MAE (TND) | RMSE | R² Score | Training Time | Status |
+|-------|-----------|------|----------|---------------|--------|
+| **KNN (n=10)** | **4.42** | 19.07 | **0.9998** | 0.004s | 🏆 Best |
+| KNN (n=5) | 7.97 | 52.06 | 0.9988 | 0.006s | Baseline |
+| XGBoost | ow experiments** tracked with full reproducibility
+- ✅ Production-ready model pipeline saved
+
+#### 4. Deliverables
+- `notebooks/02_ML_Pipeline.ipynb` - Complete ML pipeline
+- `models/knn_model.pkl` - Best performing model
+- `models/preprocessor_pipeline.pkl` - Feature preprocessing pipeline
+- `models/mlflow_model_comparison.png` - Performance visualizations
+- `WEEK2_SUMMARY.md` - Comprehensive technical documentation
+
+📖 **[Read Full Week 2 Documentation](WEEK2_SUMMARY.md)**
+
+---
+
 ## 🔜 Upcoming Work
 
-### Week 2: Data Preprocessing & Feature Engineering
-- [ ] Standardize all spec formats (RAM, storage units)
-- [ ] Handle outliers and anomalies
-- [ ] Create derived features (value score, price per spec)
-- [ ] Encode categorical variables for ML
-- [ ] Final cleaned dataset ready for modeling
-
-### Week 3: Model Development with MLflow
-- [ ] Content-based recommendation algorithm
-- [ ] Similarity scoring (cosine, euclidean)
-- [ ] MLflow experiment tracking setup
-- [ ] Model versioning and comparison
-- [ ] Hyperparameter tuning
+### Week 3: FastAPI Backend Development
+- [ ] Design REST API architecture
+- [ ] Implement price prediction endpoint
+- [ ] Create phone recommendation endpoint (similar items)
+- [ ] Add search and filter endpoints
+- [ ] API documentation with Swagger/OpenAPI
+- [ ] Load trained model for real-time inference
 
 ### Week 4: FastAPI Backend
 - [ ] RESTful API design
@@ -132,11 +156,18 @@
 - [ ] Price comparison view
 - [ ] Responsive design
 
-### Week 6: Docker & Integration
+### Week 5: Docker & Integration
 - [ ] Dockerfile for backend
 - [ ] Dockerfile for frontend
 - [ ] Docker Compose orchestration
 - [ ] Environment configuration
+- [ ] End-to-end testing
+
+### Week 6: Testing & Optimization
+- [ ] Performance testing
+- [ ] Bug fixes and refinement
+- [ ] Security audit
+- [ ] Documentation completion
 
 ### Week 7: Deployment & Presentation
 - [ ] Cloud deployment (Azure/AWS/Heroku)
@@ -218,12 +249,17 @@ jupyter notebook notebooks/01_EDA.ipynb
 
 ## 🔧 Technologies
 
-### Current (Week 1)
-- **Python 3.13** - Core language
-- **BeautifulSoup4** - HTML parsing
-- **Selenium** - Dynamic page scraping
-- **Pandas** - Data manipulation
-- **Requests** - HTTP requests
+### Week 2 (Current)
+- **Scikit-learn** - ML pipelines, KNN, Random Forest
+- **XGBoost** - Gradient boosting
+- **MLflow** - Experiment tracking and model versioning
+- **Matplotlib/Seaborn** - Visualizations
+
+### Upcoming
+- **FastAPI** - Backend API (Week 3)
+- **React + Tailwind** - Frontend (Week 4)
+- **Docker** - Containerization (Week 5)
+- **pytest** - Testing framework
 
 ### Upcoming
 - **Scikit-learn** - ML algorithms (Week 2-3)

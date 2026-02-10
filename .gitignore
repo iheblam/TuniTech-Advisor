@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+.ipynb_checkpoints/
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# MLflow
+mlruns/
+mlartifacts/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Models (too large for GitHub)
+*.pkl
+!selected_features.pkl
+!feature_info.pkl
+
+# Data - Keep only final versions
+dataset/*_complete.csv
+dataset/*_completed.csv
+dataset/bestphone_smartphones_filled_filled.csv
+dataset/mytek_smartphones_complete.csv
+dataset/tunisianet_smartphones_completed.csv
+
+# Temporary files
+*.tmp
+*.log
+.pytest_cache/
+
+# Environment variables
+.env
+.env.local
