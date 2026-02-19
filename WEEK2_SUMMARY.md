@@ -8,32 +8,24 @@ Week 2 focused on building a complete machine learning pipeline from data prepro
 
 ## 📂 Deliverables
 
-### 1. **Notebooks**
-- `notebooks/02_ML_Pipeline.ipynb` - Complete ML pipeline with 5 major steps
+### 1. **Notebooks** (Cleaned & Simplified)
+- `notebooks/01_EDA.ipynb` - Exploratory Data Analysis (Week 1)
+- `notebooks/02_ML_Pipeline_Clean.ipynb` - **Complete ML pipeline (simplified from 1,825 to ~400 lines)**
 
-### 2. **Processed Datasets**
-- `dataset/unified_smartphones_filled.csv` - Cleaned data with smart imputation
-- `dataset/smartphones_preprocessed.csv` - Preprocessed and normalized features
-- `dataset/smartphones_engineered.csv` - 14+ engineered features added
-- `dataset/smartphones_selected_features.csv` - Final dataset with 7 optimal features
+### 2. **Final Dataset**
+- `dataset/unified_smartphones.csv` - Original merged data (953 smartphones)
+- `dataset/unified_smartphones_filled.csv` - **Final cleaned dataset with smart imputation**
 
-### 3. **Models & Artifacts**
-- `models/knn_model.pkl` - Best performing model (MAE: 4.42 TND)
-- `models/random_forest_model.pkl` - Random Forest baseline
-- `models/xgboost_model.pkl` - XGBoost baseline
-- `models/preprocessor_pipeline.pkl` - Feature preprocessing pipeline
-- `models/selected_features.pkl` - Feature selection configuration
-- `models/feature_info.pkl` - Feature metadata
-- `models/model_comparison.pkl` - Model evaluation results
+### 3. **Production Models** (Clean & Optimized)
+- `models/best_model.pkl` - **Production-ready KNN model (MAE: 4.42 TND)**
+- `models/best_model_info.pkl` - Model metadata and performance metrics
+- `models/data_splits.pkl` - Train/test splits for reproducibility
+- `models/model_comparison.png` - Visual performance comparison
 
-### 4. **Visualizations**
-- `models/mlflow_model_comparison.png` - Model performance comparison
-- `models/hyperparameter_tuning.png` - Hyperparameter optimization results
-
-### 5. **MLflow Experiments**
-- 7 tracked experiments with full reproducibility
+### 4. **MLflow Experiment Tracking**
+- `mlruns/` - 7 tracked experiments with full reproducibility
 - Complete parameter and metric logging
-- Model versioning and artifact storage
+- Model versioning and easy comparison
 
 ---
 
@@ -127,32 +119,30 @@ Week 2 focused on building a complete machine learning pipeline from data prepro
 **Models Trained**:
 
 #### 1. **K-Nearest Neighbors (KNN)** 🏆
-- **Parameters**: n_neighbors=5, weights='distance'
-- **MAE**: 7.97 TND
-- **RMSE**: 52.06 TND
-- **R² Score**: 0.9988
-- **Training Time**: 0.006s
+- **Baseline**: n_neighbors=5, weights='distance'
+- **Optimized**: n_neighbors=10, weights='distance'
+- **Final MAE**: 4.42 TND (after hyperparameter tuning)
+- **R² Score**: 0.9998
+- **Training Time**: 0.004s
 - **Status**: **Best Model**
 
 #### 2. **Random Forest**
 - **Parameters**: n_estimators=100, max_depth=20
 - **MAE**: 20.75 TND
-- **RMSE**: 52.83 TND
 - **R² Score**: 0.9988
-- **Training Time**: 0.11s
+- **Training Time**: 0.89s
 
 #### 3. **XGBoost**
 - **Parameters**: n_estimators=100, max_depth=6, learning_rate=0.1
 - **MAE**: 17.27 TND
-- **RMSE**: 44.87 TND
 - **R² Score**: 0.9991
-- **Training Time**: 0.06s
+- **Training Time**: 0.23s
 
 **Dataset Split**:
 - Training: 762 smartphones (80%)
 - Testing: 191 smartphones (20%)
 
-**Winner**: KNN with **lowest MAE** and **fastest training**
+**Winner**: KNN (n=10) with **lowest MAE** and **fastest training**
 
 ---
 
@@ -187,22 +177,24 @@ Week 2 focused on building a complete machine learning pipeline from data prepro
 **Goal**: Optimize KNN performance through systematic experimentation
 
 **Methodology**:
-- Tested n_neighbors: [3, 7, 10]
+- Tested n_neighbors: [3, 5, 7, 10, 15]
 - All experiments automatically logged to MLflow
 - Systematic evaluation across metrics
 
 **Results**:
 
-| n_neighbors | MAE (TND) | RMSE (TND) | R² Score | Training Time |
-|-------------|-----------|------------|----------|---------------|
-| 3           | 12.22     | 76.40      | 0.9974   | 0.0048s       |
-| 7           | 6.20      | 35.67      | 0.9994   | 0.0041s       |
-| **10** 🏆   | **4.42**  | **19.07**  | **0.9998** | **0.0041s** |
+| n_neighbors | MAE (TND) | R² Score | Training Time |
+|-------------|-----------|----------|---------------|
+| 3           | 12.22     | 0.9974   | 0.005s       |
+| 5           | 7.97      | 0.9988   | 0.006s       |
+| 7           | 6.20      | 0.9994   | 0.004s       |
+| **10** 🏆   | **4.42**  | **0.9998** | **0.004s** |
+| 15          | 5.15      | 0.9996   | 0.004s       |
 
 **Key Findings**:
-- **44% improvement** over baseline (7.97 → 4.42 TND MAE)
+- **45% improvement** from baseline (7.97 → 4.42 TND MAE)
 - Optimal configuration: **n_neighbors=10**
-- Clear trend: More neighbors = Better accuracy
+- Clear trend: More neighbors = Better accuracy (up to optimal point)
 - Minimal impact on training time
 
 **Business Impact**:
@@ -221,16 +213,16 @@ Week 2 focused on building a complete machine learning pipeline from data prepro
 | Metric | Value | Interpretation |
 |--------|-------|----------------|
 | **MAE** | 4.42 TND | Average error per prediction |
-| **RMSE** | 19.07 TND | Penalizes large errors |
 | **R²** | 0.9998 | 99.98% variance explained |
-| **Training Time** | 0.0041s | Very fast training |
+| **Training Time** | 0.004s | Very fast training |
 | **Inference Time** | <1ms | Real-time ready |
 
 ### **Why KNN Won**:
-1. **Best accuracy**: Lowest MAE among all models
+1. **Best accuracy**: Lowest MAE among all models (4.42 TND)
 2. **Fastest training**: 10-20x faster than ensemble methods
 3. **Simple & interpretable**: Easy to explain predictions
-4. **Scalable**: Efficient for our dataset size (952 phones)
+4. **Scalable**: Efficient for our dataset size (953 phones)
+5. **Consistent**: Extremely high R² score (0.9998)
 
 ---
 
@@ -274,25 +266,26 @@ Week 2 focused on building a complete machine learning pipeline from data prepro
 ## 📊 Data Flow Summary
 
 ```
-Raw Data (1,096 phones)
-    ↓
-Filter (has price) → 953 phones
+Raw Data (953 phones with prices)
     ↓
 Smart Imputation → Fill missing specs
     ↓
-Preprocessing Pipeline → Normalize + Encode
+Preprocessing Pipeline → KNNImputer + StandardScaler (Numerical)
+                      → SimpleImputer + OneHotEncoder (Categorical)
     ↓
-Feature Engineering → 14 new features (26 total)
+Feature Engineering → 14 new features created
+                   → value_score, total_specs_score, price_tier, etc.
     ↓
-Feature Selection → 7 optimal features
+Feature Selection → 7 optimal features selected
+                 → 2 numerical + 5 categorical
     ↓
 Train/Test Split → 762 / 191 (80/20)
     ↓
-Model Training → KNN, RF, XGBoost
+Model Training → KNN, Random Forest, XGBoost
     ↓
-Hyperparameter Tuning → n_neighbors optimization
+Hyperparameter Tuning → n_neighbors: 3, 5, 7, 10, 15
     ↓
-Best Model → KNN (n=10, MAE=4.42 TND)
+Best Model Selection → KNN (n=10, MAE=4.42 TND)
     ↓
 MLflow Tracking → 7 experiments logged
     ↓
@@ -301,81 +294,21 @@ Production Ready Model ✅
 
 ---
 
-## 🚀 Next Steps (Week 3)
-
-### Immediate Actions:
-- [ ] Deploy best model as REST API endpoint
-- [ ] Add confidence intervals for predictions
-- [ ] Implement recommendation system (similar phones)
-- [ ] Create user-friendly interface for predictions
-
-### Future Improvements:
-- [ ] Try other distance metrics (Manhattan, Minkowski)
-- [ ] Implement cross-validation for robust evaluation
-- [ ] Add bias-variance analysis
-- [ ] Test on new scraped data for validation
-
----
-
-## 📁 Files Created This Week
-
-```
-notebooks/
-├── 02_ML_Pipeline.ipynb          # Complete ML pipeline (5 steps)
-
-dataset/
-├── unified_smartphones_filled.csv         # Smart imputation
-├── smartphones_preprocessed.csv           # Normalized features
-├── smartphones_engineered.csv             # Engineered features
-└── smartphones_selected_features.csv      # Final dataset
-
-models/
-├── knn_model.pkl                          # Best model (n=10)
-├── random_forest_model.pkl                # RF baseline
-├── xgboost_model.pkl                      # XGBoost baseline
-├── preprocessor_pipeline.pkl              # Feature preprocessing
-├── selected_features.pkl                  # Feature config
-├── feature_info.pkl                       # Feature metadata
-├── model_comparison.pkl                   # Evaluation results
-├── mlflow_model_comparison.png            # Visual comparison
-└── hyperparameter_tuning.png              # Tuning results
-
-mlruns/
-└── [MLflow tracking data - 7 experiments]
-```
-
----
-
-## 🎯 Success Metrics
-
-✅ **All Week 2 Objectives Completed**
-
-| Goal | Target | Achieved | Status |
-|------|--------|----------|--------|
-| Data Preprocessing | Pipeline ready | ✅ Complete pipeline | ✅ |
-| Feature Engineering | 10+ features | ✅ 14 features created | ✅ |
-| Feature Selection | <10 features | ✅ 7 features selected | ✅ |
-| Model Training | 3 models | ✅ KNN, RF, XGBoost | ✅ |
-| MLflow Integration | Tracking setup | ✅ 7 experiments logged | ✅ |
-| Hyperparameter Tuning | Optimize best model | ✅ 44% improvement | ✅ |
-| Model Accuracy | R² > 0.95 | ✅ R² = 0.9998 | ✅ |
-| Prediction Error | MAE < 50 TND | ✅ MAE = 4.42 TND | ✅ |
-
----
-
 ## 🎉 Week 2 Achievements
 
-1. ✅ Built production-ready ML pipeline
-2. ✅ Achieved 99.98% prediction accuracy
-3. ✅ Reduced prediction error to 4.42 TND
-4. ✅ Implemented professional experiment tracking
-5. ✅ Optimized model through systematic tuning
-6. ✅ Created comprehensive documentation
-7. ✅ Prepared for API development (Week 3)
+1. ✅ Built production-ready ML pipeline (simplified to 400 lines)
+2. ✅ Achieved 99.98% prediction accuracy (R²=0.9998)
+3. ✅ Reduced prediction error to 4.42 TND (45% improvement)
+4. ✅ Implemented professional experiment tracking (7 MLflow runs)
+5. ✅ Optimized model through systematic hyperparameter tuning
+6. ✅ Cleaned and organized project structure
+7. ✅ Created comprehensive, easy-to-run documentation
+8. ✅ Prepared for API development (Week 3)
 
-**Status**: Week 2 completed successfully! Ready for backend development 🚀
+**Status**: Week 2 completed successfully! Clean, production-ready ML pipeline 🚀
 
 ---
 
-*Last Updated: February 10, 2026*
+*Last Updated: February 17, 2026*  
+*Authors: Iheb Lamouchi & Yassine Nemri*  
 *Project: TuniTech Advisor - ML Pipeline Development*
