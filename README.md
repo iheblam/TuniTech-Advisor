@@ -18,7 +18,7 @@
 
 ### 🌟 Key Features
 
-- **Multi-source Data Aggregation**: Scrapes smartphones from Tunisianet, Mytek, SpaceNet, and BestPhone
+- **Multi-source Data Aggregation**: Scrapes smartphones from Tunisianet, Mytek, SpaceNet, BestPhone, and BestBuyTunisie (5 sources)
 - **Smart Recommendations**: AI-powered matching based on user requirements (budget, RAM, storage, camera, etc.)
 - **Price Prediction**: ML model (KNN, R²=0.9998) predicts fair market prices in TND
 - **Price Comparison**: Shows the same phone across different stores with price differences
@@ -54,14 +54,15 @@
 - [x] Dependencies managed via `requirements.txt`
 - [x] Folder structure: `code/`, `dataset/`, documentation
 
-#### 2. Web Scraping (4 Sources)
+#### 2. Web Scraping (5 Sources)
 | Source | Products | Method | Notes |
 |--------|----------|--------|-------|
 | Tunisianet | 357 | BeautifulSoup + Requests | Direct HTML parsing |
 | SpaceNet | 320 | BeautifulSoup + Requests | 8 pages scraped |
 | Mytek | 281 | Selenium | JavaScript rendering required |
 | BestPhone | 138 | BeautifulSoup + Requests | Simpler structure |
-| **Total** | **1,096** | | |
+| BestBuyTunisie | 214 | BeautifulSoup + Requests | Multi-page catalog |
+| **Total** | **1,310** | | |
 
 #### 3. Data Enrichment
 - Cross-source matching to fill missing specifications
@@ -86,10 +87,12 @@
 │   ├── scrape_mytek_smartphones.py
 │   ├── scrape_spacenet_smartphones.py
 │   ├── scrape_bestphone_smartphones.py
+│   ├── scrape_bestbuytunisie_smartphones.py
 │   ├── fill_missing_specs.py
 │   ├── fill_specs_from_existing.py
 │   ├── fill_bestphone_specs.py
 │   ├── fill_bestphone_enhanced.py
+│   ├── fill_bestbuytunisie_specs.py
 │   └── fill_known_specs.py
 │
 ├── dataset/
@@ -101,6 +104,8 @@
 │   ├── spacenet_smartphones_filled.csv
 │   ├── bestphone_smartphones.csv
 │   ├── bestphone_smartphones_filled.csv
+│   ├── bestbuytunisie_smartphones.csv
+│   ├── bestbuytunisie_smartphones_filled.csv
 │   └── unified_smartphones.csv
 │
 ├── requirements.txt
@@ -109,7 +114,7 @@
 
 ---
 
-## � Week 2 Progress: ML Pipeline & Experiment Tracking
+## 📊 Week 2 Progress: ML Pipeline & Experiment Tracking
 
 ### ✅ What We Accomplished
 
@@ -126,6 +131,11 @@
 | **KNN (n=10)** | **4.42** | 19.07 | **0.9998** | 0.004s | 🏆 Best |
 | KNN (n=5) | 7.97 | 52.06 | 0.9988 | 0.006s | Baseline |
 | XGBoost | 12.3 | 68.4 | 0.9971 | 2.1s | Alternative |
+
+#### 3. MLflow Experiment Tracking
+- [x] All experiments logged with parameters, metrics, and artifacts
+- [x] Model registry with versioning and stage transitions
+- [x] Reproducible runs with tagged metadata
 - ✅ Production-ready model pipeline saved
 
 #### 4. Deliverables
@@ -139,7 +149,7 @@
 
 ---
 
-## � Week 3 Progress: FastAPI Backend
+## 🚀 � Week 3 Progress: FastAPI Backend
 
 ### ✅ What We Accomplished
 
@@ -162,6 +172,16 @@
 - `data_service.py` – reads unified CSV dataset, provides filtering/search utilities
 - `auth_service.py` – JWT token creation & validation
 - `user_service.py` – in-memory user store with hashed passwords
+
+#### 4. Auth Model
+| Field | Type | Description |
+|-------|------|-------------|
+| `username` | string | Unique login identifier |
+| `email` | string | User email address |
+| `hashed_password` | string | bcrypt-hashed password |
+| `role` | enum | `admin` or `user` |
+| `is_active` | bool | Account enabled flag |
+| `created_at` | datetime | Registration timestamp |
 
 #### 4. Deliverables
 - `api/` – full production-ready FastAPI application
@@ -338,9 +358,11 @@ python scrapers/scrape_tunisianet_smartphones.py
 python scrapers/scrape_spacenet_smartphones.py
 python scrapers/scrape_mytek_smartphones.py
 python scrapers/scrape_bestphone_smartphones.py
+python scrapers/scrape_bestbuytunisie_smartphones.py
 
 # Fill missing specs
 python scrapers/fill_specs_from_existing.py
+python scrapers/fill_bestbuytunisie_specs.py
 ```
 
 ### Running EDA Notebook
@@ -383,7 +405,7 @@ jupyter notebook notebooks/01_EDA.ipynb
 | Name | Role | Contact |
 |------|------|---------|
 | **Iheb Lamouchi** | Developer | [GitHub](https://github.com/iheblam) |
-| **Yassine Nemri** | Developer | |
+| **Yassine Nemri** | Developer | [yassinenemri0@gmail.com](mailto:yassinenemri0@gmail.com) |
 
 ---
 
@@ -395,7 +417,7 @@ This project is developed as part of an academic course.
 
 ## 🙏 Acknowledgments
 
-- Tunisianet, Mytek, SpaceNet, and BestPhone for their public product data
+- Tunisianet, Mytek, SpaceNet, BestPhone, and BestBuyTunisie for their public product data
 - Course instructors for guidance and feedback
 
 ---
