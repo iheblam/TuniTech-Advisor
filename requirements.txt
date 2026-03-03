@@ -1,0 +1,32 @@
+# Web Scraping
+requests>=2.28.0
+beautifulsoup4>=4.11.0
+selenium>=4.0.0
+
+# AI / Image search
+groq>=0.9.0
+duckduckgo-search>=6.0.0
+
+# Data Manipulation & Analysis
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Data Visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Machine Learning & Experiment Tracking
+scikit-learn>=1.3.0
+mlflow>=2.0.0
+
+# FastAPI Backend
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-multipart>=0.0.6
+
+# Additional API dependencies
+joblib>=1.3.0
+python-jose>=3.3.0
+passlib>=1.7.4
