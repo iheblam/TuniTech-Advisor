@@ -58,9 +58,17 @@ export default function PhoneCard({ phone, selectable, selected, onSelect }: Pro
               onError={() => { setImgUrl(null); setImgLoaded(true); }}
             />
           ) : imgFetched ? (
-            <div className="flex flex-col items-center gap-1 text-gray-300">
-              <Smartphone size={40} />
-              <span className="text-xs">No image</span>
+            <div className="flex flex-col items-center gap-1.5 text-gray-300">
+              <Smartphone size={36} />
+              <a
+                href={`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(phone.brand + ' ' + phone.name)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-[10px] text-blue-400 hover:text-blue-600 hover:underline leading-none"
+              >
+                Search on Google
+              </a>
             </div>
           ) : null}
 

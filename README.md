@@ -18,15 +18,22 @@
 
 ### 🌟 Key Features
 
-- **Multi-source Data Aggregation**: Scrapes smartphones from Tunisianet, Mytek, SpaceNet, BestPhone, and BestBuyTunisie (5 sources)
+- **Multi-source Data Aggregation**: Scrapes smartphones from Tunisianet, Mytek, SpaceNet, BestPhone, and BestBuyTunisie (5 sources, 1236 phones)
 - **Smart Recommendations**: AI-powered matching based on user requirements (budget, RAM, storage, camera, etc.)
 - **Price Prediction**: ML model (KNN, R²=0.9998) predicts fair market prices in TND
 - **Price Comparison**: Shows the same phone across different stores with price differences
-- **Store Availability**: Indicates which stores have the phone in stock
 - **Real-time Search**: Fast filtering by brand, price range, and specifications
-- **User Authentication**: JWT-based auth with registration, login, and profile management
+- **Budget Optimizer**: Set a budget range + filters → instantly find the best value phones
+- **Use-case Recommendations**: Pick a profile (Gaming, Photography, Student, Work, Battery, 5G) → tailored phones
+- **Community Reviews**: Logged-in users rate (1–5 ⭐) and comment on phones they own
+- **Trending Phones**: Tracks views + searches → shows most popular phones among Tunisian users
+- **Price History Tracking**: Snapshots phone prices on every scrape run, 90-day rolling history per store
+- **Brand Analytics**: Charts average price and phone count per brand
+- **Market Dashboard**: RAM/Storage/Network distribution, price heatmap, Groq AI market summary
+- **Scraper Scheduler**: Weekly auto-scrape with per-store timeout, additive merge (never loses old data), auto-backup
+- **Hard Login Gate**: All pages require authentication — guests redirected to login automatically
+- **User Authentication**: JWT-based auth with registration, login profiles, admin panel
 - **Full-stack Docker**: One-command deployment with Docker Compose
-- **Interactive UI**: React + TypeScript + Tailwind CSS frontend with dedicated pages for search, recommendations, predictions, and comparisons
 
 ---
 
@@ -39,8 +46,92 @@
 | 3 | FastAPI Backend | ✅ Complete | Full REST API with auth, predictions, recommendations, search |
 | 4 | React Frontend | ✅ Complete | Multi-page TypeScript/Tailwind UI |
 | 5 | Docker & Integration | ✅ Complete | Dockerized frontend + backend with Docker Compose |
-| 6 | Testing & Optimization | ⏳ Pending | Performance testing, bug fixes, optimization |
+| 6 | Testing, Features & Optimization | ✅ Complete | Community features, analytics, scheduler, bug fixes |
 | 7 | Deployment & Presentation | ⏳ Pending | Cloud deployment and final presentation |
+
+---
+
+## 🚀 March 7, 2026 — Full Feature Session
+
+### ✨ New Features Added
+
+#### 🔐 Hard Login Gate
+- Every route now requires authentication — guests are automatically redirected to `/login`
+- `RequireLogin` layout component wraps all protected routes in the React Router tree
+
+#### 🌟 Community Reviews
+- Logged-in users can rate any phone (1–5 stars) and leave a comment
+- One review per user per phone; re-submitting replaces the previous review
+- Users can delete their own reviews from the phone detail modal
+- Average rating + review count displayed live per phone
+- Backend: `api/routers/community.py` + `api/services/community_service.py`
+- Data stored in `data/reviews.json`
+
+#### 🔥 Trending Phones (`/trending`)
+- Every phone detail view fires a `view` event; every search fires a `search` event (weight 3×)
+- Trending page ranks top 12 phones by score, top 3 displayed in a podium layout
+- Data stored in `data/trending.json`
+
+#### 💰 Budget Optimizer (`/budget`)
+- Enter a budget range (or pick a preset: Entry / Mid / High / Flagship)
+- Advanced filters: min RAM, storage, battery, brand, 5G toggle
+- Returns best-value phones from the live dataset
+
+#### 🎯 Use-case Recommendations (`/use-case`)
+- 6 one-click profiles: **Gaming**, **Photography**, **Battery Champion**, **Student**, **Work Power User**, **Best 5G**
+- Each profile maps to a pre-tuned filter set, returns an instant ranked list
+
+#### 📈 Price History Tracking
+- Every scheduler scrape snapshots prices per phone per store
+- 90-day rolling window stored in `data/price_history.json`
+- 1236 prices seeded on March 7 as day-1 baseline
+- API: `GET /api/v1/community/price-history/{phone_name}`
+
+#### 📊 Brand Analytics + Market Dashboard (earlier session)
+- `/brands` — average price and phone count per brand (Recharts bar charts)
+- `/market` — RAM/Storage/Network distributions, price heatmap, Groq AI market summary
+
+#### 🤖 Scraper Refresh Scheduler (Admin panel)
+- Weekly auto-scrape pipeline (configurable interval)
+- Per-store 4-minute timeout via `ThreadPoolExecutor`
+- Additive merge strategy — never loses old phone data when a store scrape fails
+- Auto-backup of `*_backup.csv` before every overwrite
+- Live progress status: current store, elapsed time, partial results
+
+### 🐛 Bugs Fixed
+
+| Bug | Fix |
+|-----|-----|
+| `bcrypt` crash (passlib incompatible with 4.x) | Pinned `bcrypt==3.2.2` |
+| User login 401 (hash mismatch in users.json) | Reset `iheb`/`Iheb1234` with correct hash |
+| Admin login 401 (wrong URL + missing .env) | Created `.env`, unified `/login` page |
+| Groq 400 (model decommissioned) | Switched to `llama-3.1-8b-instant` |
+| Scheduler stuck "Running now…" forever | Reset `running=False` on startup, added per-store timeout |
+| Dataset shrinking after scrape | Additive merge — keeps old rows for failed stores |
+| Source name case mismatch (SpaceNet vs Spacenet) | Fixed `STORE_SOURCE_MAP` |
+| Stray `+` in scheduler_service.py causing TypeError | Removed leading `+` from docstring |
+| Dataset dropped to 892 phones | Rebuilt from all 5 store CSVs → restored 1236 phones |
+| White screen — Vite HMR `useAuth` incompatible | Moved `RequireLogin` to its own component file |
+
+### 📁 New Files Created
+
+```
+api/
+  routers/community.py          ← Reviews, trending, price history endpoints
+  services/community_service.py ← JSON-based storage for all community data
+  services/scheduler_service.py ← Heavily updated (timeout, additive merge, backup)
+
+frontend/src/
+  pages/BudgetOptimizerPage.tsx ← Budget range + advanced filter UI
+  pages/UseCasePage.tsx         ← 6 use-case profile cards
+  pages/TrendingPage.tsx        ← Ranked trending phones with podium
+  components/RequireLogin.tsx   ← Hard login gate layout component
+
+data/
+  reviews.json                  ← Community reviews store
+  trending.json                 ← View/search event counts
+  price_history.json            ← 90-day price snapshots (1236 entries seeded)
+```
 
 ---
 

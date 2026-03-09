@@ -2,9 +2,10 @@
 Pydantic schemas for API request/response validation
 """
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, validator, field_validator, model_validator
 from typing import Optional, List, Dict, Any
 from datetime import datetime
+import math
 
 
 class SmartphoneFeatures(BaseModel):
@@ -125,13 +126,13 @@ class RecommendationRequest(BaseModel):
 
 class SmartphoneDetail(BaseModel):
     """Detailed smartphone information"""
-    
+
     name: str
     brand: str
     price: float
     store: str
     url: Optional[str] = None
-    
+
     # Specifications
     ram: Optional[float] = None
     storage: Optional[float] = None
@@ -142,10 +143,24 @@ class SmartphoneDetail(BaseModel):
     processor: Optional[str] = None
     is_5g: Optional[bool] = None
     has_nfc: Optional[bool] = None
-    
+
     # Additional info
     availability: Optional[str] = "In Stock"
     match_score: Optional[float] = Field(None, description="How well it matches criteria (0-100)")
+
+    @model_validator(mode='before')
+    @classmethod
+    def _sanitise_nan(cls, values):
+        """Convert any float NaN / inf coming from pandas to None."""
+        if isinstance(values, dict):
+            cleaned = {}
+            for k, v in values.items():
+                if isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+                    cleaned[k] = None
+                else:
+                    cleaned[k] = v
+            return cleaned
+        return values
     
     class Config:
         json_schema_extra = {

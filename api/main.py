@@ -10,7 +10,7 @@ from datetime import datetime
 import time
 
 from .config import settings
-from .routers import health_router, predictions_router, recommendations_router, auth_router, admin_router
+from .routers import health_router, predictions_router, recommendations_router, auth_router, admin_router, analytics_router, scheduler_router, community_router
 
 
 # Create FastAPI app
@@ -78,6 +78,9 @@ app.include_router(health_router, prefix=settings.api_prefix)
 app.include_router(predictions_router, prefix=settings.api_prefix)
 app.include_router(recommendations_router, prefix=settings.api_prefix)
 app.include_router(auth_router, prefix=settings.api_prefix)
+app.include_router(analytics_router, prefix=settings.api_prefix)
+app.include_router(scheduler_router, prefix=settings.api_prefix)
+app.include_router(community_router, prefix=settings.api_prefix)
 app.include_router(admin_router, prefix=settings.api_prefix)
 
 
@@ -115,6 +118,11 @@ async def startup_event():
     print(f"Health Check: http://localhost:8000{settings.api_prefix}/health")
     print("=" * 60)
 
+    # Start background scrape scheduler
+    from .services.scheduler_service import scheduler_service  # noqa: F401
+    print("Scrape scheduler started (weekly interval).")
+    print("=" * 60)
+
 
 # Shutdown event
 @app.on_event("shutdown")
@@ -123,6 +131,11 @@ async def shutdown_event():
     Application shutdown
     """
     print("\nShutting down TuniTech Advisor API...")
+    try:
+        from .services.scheduler_service import scheduler_service
+        scheduler_service.shutdown()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

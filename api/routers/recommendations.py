@@ -5,7 +5,10 @@ Smartphone recommendation endpoints
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 import pandas as pd
+import math as _math
 import asyncio
+import re as _re
+from urllib.parse import quote as _url_quote
 from concurrent.futures import ThreadPoolExecutor
 import requests as http_requests
 from bs4 import BeautifulSoup
@@ -19,6 +22,14 @@ from ..services.data_service import data_service
 from ..config import settings
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"])
+
+
+def _clean(row: dict) -> dict:
+    """Replace float NaN/inf with None so json.dumps never chokes."""
+    return {
+        k: (None if isinstance(v, float) and not _math.isfinite(v) else v)
+        for k, v in row.items()
+    }
 
 
 @router.post("/", response_model=RecommendationResponse)
@@ -165,7 +176,7 @@ async def search_smartphones(
         filtered_data = filtered_data.head(limit)
         
         # Convert to list of dicts
-        results = filtered_data.to_dict('records')
+        results = [_clean(r) for r in filtered_data.to_dict('records')]
         
         return {
             "query": query,
@@ -210,7 +221,7 @@ async def compare_smartphones(
         for sid in smartphone_ids:
             phone = data_service.get_smartphone_by_id(sid)
             if phone:
-                smartphones.append(phone)
+                smartphones.append(_clean(phone) if isinstance(phone, dict) else phone)
         
         if not smartphones:
             raise HTTPException(
@@ -321,6 +332,40 @@ def _groq_gsmarena_sync(brand: str, name: str) -> Optional[str]:
     return None
 
 
+def _duckduckgo_image_sync(brand: str, name: str) -> Optional[str]:
+    """Find a product image via DuckDuckGo Image Search (no API key required)."""
+    try:
+        query = f"{brand} {name} smartphone official"
+        # Step 1 – fetch the vqd token that DuckDuckGo requires
+        r1 = http_requests.get(
+            f"https://duckduckgo.com/?q={_url_quote(query)}&iax=images&ia=images",
+            headers=_SCRAPE_HEADERS,
+            timeout=6,
+        )
+        vqd_match = _re.search(r"vqd=['\"]([\d-]+)['\"]", r1.text)
+        if not vqd_match:
+            # newer DuckDuckGo pages embed it differently
+            vqd_match = _re.search(r"vqd=([\d-]+)&", r1.text)
+        if not vqd_match:
+            return None
+        vqd = vqd_match.group(1)
+        # Step 2 – query the image JSON endpoint
+        r2 = http_requests.get(
+            "https://duckduckgo.com/i.js",
+            params={"l": "us-en", "o": "json", "q": query, "vqd": vqd, "f": ",,,,,"},
+            headers={**_SCRAPE_HEADERS, "Referer": "https://duckduckgo.com/"},
+            timeout=6,
+        )
+        results = r2.json().get("results", [])
+        for item in results[:5]:
+            img_url = item.get("image", "")
+            if img_url and img_url.startswith("http"):
+                return img_url
+    except Exception:
+        pass
+    return None
+
+
 @router.get("/phone-image")
 async def get_phone_image(
     name: str = Query(..., description="Phone model name"),
@@ -331,6 +376,7 @@ async def get_phone_image(
     Return a product image URL.
     1. Try og:image from the store product page (fast, works for Tunisianet/Mytek).
     2. Fallback: ask Groq for the GSMArena bigpic filename and validate with HEAD.
+    3. Fallback: DuckDuckGo Image Search (no API key, returns a real CDN image URL).
     Result is cached in memory after first fetch.
     """
     cache_key = f"{brand}|{name}"
@@ -364,6 +410,19 @@ async def get_phone_image(
             if gsm:
                 image_urls = [gsm]
                 source = "gsmarena"
+        except Exception:
+            pass
+
+    # Step 3 — DuckDuckGo Image Search (no API key required)
+    if not image_urls:
+        try:
+            ddg = await asyncio.wait_for(
+                loop.run_in_executor(_EXECUTOR, _duckduckgo_image_sync, brand, name),
+                timeout=10.0,
+            )
+            if ddg:
+                image_urls = [ddg]
+                source = "duckduckgo"
         except Exception:
             pass
 

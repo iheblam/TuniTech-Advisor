@@ -1,51 +1,37 @@
 """
 User Service – register / authenticate normal users.
-Users are stored in a JSON file (./users.json) for simplicity.
+Users are stored in MongoDB (collection: users).
 """
 
-import json
-import os
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from passlib.context import CryptContext
 
-_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from .database import get_db
 
-_USERS_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "users.json")
+_pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Fields that must never be overwritten via update_user
 _IMMUTABLE = {"id", "username", "hashed_password", "created_at"}
 
 
-# ── helpers ──────────────────────────────────────────────────────────────────
-
-def _load() -> list[dict]:
-    if not os.path.exists(_USERS_FILE):
-        return []
-    with open(_USERS_FILE, "r", encoding="utf-8") as f:
-        return json.load(f).get("users", [])
-
-
-def _save(users: list[dict]) -> None:
-    with open(_USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump({"users": users}, f, indent=2, default=str)
-
-
 def _public(user: dict) -> dict:
-    """Strip hashed_password from a user dict."""
-    return {k: v for k, v in user.items() if k != "hashed_password"}
+    """Strip hashed_password and MongoDB _id from a user dict."""
+    return {k: v for k, v in user.items() if k not in ("hashed_password", "_id")}
 
 
 # ── public API ────────────────────────────────────────────────────────────────
 
 def get_by_username(username: str) -> Optional[dict]:
-    return next((u for u in _load() if u["username"].lower() == username.lower()), None)
+    doc = get_db().users.find_one({"username": {"$regex": f"^{username}$", "$options": "i"}})
+    return doc if doc else None
 
 
 def get_by_email(email: str) -> Optional[dict]:
-    return next((u for u in _load() if u["email"].lower() == email.lower()), None)
+    doc = get_db().users.find_one({"email": {"$regex": f"^{email}$", "$options": "i"}})
+    return doc if doc else None
 
 
 def create_user(
@@ -60,7 +46,6 @@ def create_user(
     join_reason: Optional[str] = None,
 ) -> dict:
     """Create and persist a new user. Returns the public user dict (no hash)."""
-    users = _load()
     user = {
         "id": str(uuid.uuid4()),
         "username": username,
@@ -74,33 +59,31 @@ def create_user(
         "join_reason": join_reason,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
-    users.append(user)
-    _save(users)
+    get_db().users.insert_one(user)
     return _public(user)
 
 
 def update_user(username: str, updates: dict) -> Optional[dict]:
     """Update mutable profile fields for an existing user."""
-    users = _load()
-    for i, u in enumerate(users):
-        if u["username"].lower() == username.lower():
-            for key, value in updates.items():
-                if key not in _IMMUTABLE:
-                    users[i][key] = value
-            _save(users)
-            return _public(users[i])
-    return None
+    safe_updates = {k: v for k, v in updates.items() if k not in _IMMUTABLE}
+    if not safe_updates:
+        doc = get_by_username(username)
+        return _public(doc) if doc else None
+    result = get_db().users.find_one_and_update(
+        {"username": {"$regex": f"^{username}$", "$options": "i"}},
+        {"$set": safe_updates},
+        return_document=True,
+    )
+    return _public(result) if result else None
 
 
 def update_password(username: str, new_password: str) -> bool:
     """Hash and persist a new password for an existing user."""
-    users = _load()
-    for i, u in enumerate(users):
-        if u["username"].lower() == username.lower():
-            users[i]["hashed_password"] = _pwd_context.hash(new_password)
-            _save(users)
-            return True
-    return False
+    result = get_db().users.update_one(
+        {"username": {"$regex": f"^{username}$", "$options": "i"}},
+        {"$set": {"hashed_password": _pwd_context.hash(new_password)}},
+    )
+    return result.modified_count > 0
 
 
 def verify_password(plain: str, hashed: str) -> bool:

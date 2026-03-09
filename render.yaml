@@ -1,0 +1,58 @@
+# render.yaml – Backend-only deployment on Render.com (free tier)
+#
+# The frontend is deployed separately on Vercel (see vercel.json).
+#
+# HOW TO DEPLOY:
+#   1. Create a free MongoDB Atlas cluster (M0) at https://cloud.mongodb.com
+#      and grab the connection string (mongodb+srv://...).
+#   2. Push this repo to GitHub.
+#   3. Render dashboard → New → Blueprint → connect your repo.
+#   4. After the backend finishes deploying, copy its URL (e.g.
+#      https://tunitech-backend.onrender.com) and set VITE_API_BASE_URL
+#      in your Vercel project's environment variables.
+#   5. Set all "sync: false" vars in the Render dashboard.
+#   6. Run `python scripts/seed_mongodb.py` once locally (with MONGODB_URI set)
+#      to migrate existing JSON data into Atlas.
+#
+# Free-tier notes:
+#   - Web service sleeps after 15 min idle; first request wakes it in ~30 s.
+#   - All persistent data (users, reviews, trending, price history) is stored
+#     in MongoDB Atlas – it is NEVER lost on redeploy.
+
+services:
+  - type: web
+    name: tunitech-backend
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/v1/health/
+    envVars:
+      - key: ADMIN_USERNAME
+        value: tuniAdmin
+
+      - key: ADMIN_PASSWORD
+        sync: false          # set in Render dashboard
+
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates a cryptographically strong value
+
+      - key: GROQ_API_KEY
+        sync: false          # set in Render dashboard (free key from console.groq.com)
+
+      - key: MONGODB_URI
+        sync: false          # set in Render dashboard – mongodb+srv://user:pass@cluster.mongodb.net/tunitech
+
+      - key: DEBUG
+        value: "false"
+
+      - key: MLFLOW_TRACKING_URI
+        value: ./mlruns
+
+      - key: MLFLOW_EXPERIMENT_NAME
+        value: smartphone-price-prediction
+
+      - key: CORS_ORIGINS
+        # Replace the Vercel URL with your actual Vercel deployment URL.
+        # You can update this after the frontend is live.
+        value: "https://tuni-tech-advisor.vercel.app,http://localhost:3000"
+

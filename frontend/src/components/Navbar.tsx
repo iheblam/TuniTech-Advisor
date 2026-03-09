@@ -1,13 +1,18 @@
 import { NavLink, useNavigate, Link } from 'react-router-dom';
-import { Smartphone, BarChart2, Search, Cpu, GitCompare, LogOut, UserCircle, Settings } from 'lucide-react';
+import { Smartphone, BarChart2, Search, Cpu, GitCompare, LogOut, UserCircle, Settings, TrendingUp, LayoutDashboard, Flame, Wallet, Target } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const links = [
-  { to: '/', label: 'Home',            icon: <Smartphone size={15} /> },
+  { to: '/',          label: 'Home',      icon: <Smartphone size={15} /> },
   { to: '/recommend', label: 'Recommend', icon: <BarChart2 size={15} /> },
   { to: '/predict',   label: 'Predictor', icon: <Cpu size={15} /> },
   { to: '/search',    label: 'Search',    icon: <Search size={15} /> },
   { to: '/compare',   label: 'Compare',   icon: <GitCompare size={15} /> },
+  { to: '/trending',  label: 'Trending',  icon: <Flame size={15} /> },
+  { to: '/budget',    label: 'Budget',    icon: <Wallet size={15} /> },
+  { to: '/use-case',  label: 'For Me',    icon: <Target size={15} /> },
+  { to: '/brands',    label: 'Brands',    icon: <TrendingUp size={15} /> },
+  { to: '/market',    label: 'Market',    icon: <LayoutDashboard size={15} /> },
 ];
 
 /** Fallback DiceBear avatar seeded from username */

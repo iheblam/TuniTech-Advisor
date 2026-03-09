@@ -25,23 +25,45 @@ python run_api.py
 uvicorn api.main:app --reload
 ```
 
+## �️ Run the Frontend
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs at **http://localhost:3000**
+
 ## 📍 Access Points
 
 Once running, access:
+- **Frontend App**: http://localhost:3000
 - **API Root**: http://localhost:8000
 - **Interactive Docs (Swagger)**: http://localhost:8000/docs
 - **Alternative Docs (ReDoc)**: http://localhost:8000/redoc
 - **Health Check**: http://localhost:8000/api/v1/health
 
+## 🔐 Default Credentials
+
+| Role  | Username   | Password   |
+|-------|-----------|------------|
+| Admin | tuniAdmin  | Admin1234  |
+| User  | iheb       | Iheb1234   |
+
+> Create your own account via the **Register** page.
+
 ## ✅ Prerequisites Checklist
 
-Before running the API, ensure:
+Before running, ensure:
 
 - [ ] Python 3.13+ installed
+- [ ] Node.js 18+ installed (for frontend)
 - [ ] All dependencies installed (`pip install -r requirements.txt`)
 - [ ] Dataset exists: `dataset/unified_smartphones_filled.csv`
 - [ ] ML models trained: `mlruns/` directory with experiment data
-- [ ] Port 8000 is available
+- [ ] `.env` file present (see `.env.example`)
+- [ ] Port 8000 available (backend) and port 3000 available (frontend)
 
 ## 🧪 Test the API
 

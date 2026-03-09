@@ -28,6 +28,10 @@ scrapers/
 .DS_Store
 Thumbs.db
 
+# Secrets - NEVER bake into image
+.env
+.env.local
+
 # Frontend source (already has its own image)
 frontend/node_modules/
 frontend/dist/

@@ -3,6 +3,7 @@ import {
   LayoutDashboard, FlaskConical, ExternalLink, LogOut,
   RefreshCw, Play, CheckCircle, XCircle, Cpu,
   Database, BarChart2, ChevronRight, Upload, Tag,
+  CalendarClock, Clock, AlertTriangle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -12,6 +13,10 @@ import {
   adminLogModel,
   adminStartMLflowUI,
   adminGetMLflowStatus,
+  getSchedulerStatus,
+  triggerSchedulerNow,
+  setSchedulerInterval,
+  type SchedulerStatus,
 } from '../api/client';
 import Spinner from '../components/Spinner';
 
@@ -50,7 +55,7 @@ interface MLRun {
   tags: Record<string, string>;
 }
 
-type Tab = 'dashboard' | 'runs' | 'mlflow';
+type Tab = 'dashboard' | 'runs' | 'mlflow' | 'scheduler';
 
 /* ── Sub-components ─────────────────────────────────────────── */
 function StatCard({ icon, label, value, sub, ok }: {
@@ -98,6 +103,13 @@ export default function AdminPage() {
   const [mlflowMsg,   setMlflowMsg]   = useState('');
   const [mlflowLive,  setMlflowLive]  = useState(false);
 
+  // ── Scheduler state ────────────────────────────────────────────
+  const [schedStatus,   setSchedStatus]   = useState<SchedulerStatus | null>(null);
+  const [schedLoading,  setSchedLoading]  = useState(false);
+  const [schedRunning,  setSchedRunning]  = useState(false);
+  const [schedMsg,      setSchedMsg]      = useState('');
+  const [schedInterval, setSchedInterval] = useState('');
+
   const fetchAll = useCallback(async () => {
     if (!token) return;
     setLoadingData(true);
@@ -118,6 +130,22 @@ export default function AdminPage() {
   }, [token]);
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
+
+  // Fetch scheduler status
+  const fetchSchedStatus = useCallback(async () => {
+    setSchedLoading(true);
+    try {
+      const s = await getSchedulerStatus();
+      setSchedStatus(s);
+      setSchedInterval(String(s.interval_hours));
+    } catch (e) {
+      console.error('Scheduler fetch error', e);
+    } finally {
+      setSchedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchSchedStatus(); }, [fetchSchedStatus]);
 
   // Ping MLflow UI via backend (avoids browser ERR_CONNECTION_REFUSED noise)
   useEffect(() => {
@@ -155,10 +183,51 @@ export default function AdminPage() {
   const fmtTime = (ms: number | null) =>
     ms ? new Date(ms).toLocaleString() : '—';
 
+  const fmtDate = (iso: string | null | undefined) =>
+    iso ? new Date(iso).toLocaleString() : '—';
+
+  const handleRunNow = async () => {
+    if (!token) return;
+    setSchedRunning(true);
+    setSchedMsg('');
+    try {
+      await triggerSchedulerNow(token);
+      setSchedMsg('✓ Pipeline started in background — refresh in a minute to see results.');
+      // Poll status after a short delay
+      setTimeout(() => fetchSchedStatus(), 3000);
+    } catch (e: unknown) {
+      const err = e as { response?: { status?: number } };
+      if (err?.response?.status === 409) {
+        setSchedMsg('⚠ Pipeline is already running.');
+      } else {
+        setSchedMsg('✗ Failed to trigger pipeline.');
+      }
+    } finally {
+      setSchedRunning(false);
+    }
+  };
+
+  const handleSetInterval = async () => {
+    if (!token) return;
+    const h = parseInt(schedInterval, 10);
+    if (isNaN(h) || h < 1 || h > 8760) {
+      setSchedMsg('✗ Hours must be 1–8760.');
+      return;
+    }
+    try {
+      await setSchedulerInterval(token, h);
+      setSchedMsg(`✓ Interval updated to ${h} h`);
+      await fetchSchedStatus();
+    } catch {
+      setSchedMsg('✗ Failed to update interval.');
+    }
+  };
+
   const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
     { id: 'dashboard', label: 'Dashboard',   icon: <LayoutDashboard size={16} /> },
     { id: 'runs',      label: 'MLflow Runs', icon: <FlaskConical size={16} /> },
     { id: 'mlflow',    label: 'MLflow UI',   icon: <ExternalLink size={16} /> },
+    { id: 'scheduler', label: 'Scheduler',   icon: <CalendarClock size={16} /> },
   ];
 
   return (
@@ -487,6 +556,187 @@ export default function AdminPage() {
                   <RefreshCw size={14} /> Check Again
                 </button>
               </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── SCHEDULER TAB ─────────────────────────────────── */}
+      {tab === 'scheduler' && (
+        <div className="space-y-6">
+          {/* Header row */}
+          <div className="flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <h2 className="font-bold text-gray-900">Scrape Refresh Scheduler</h2>
+              {schedStatus && (
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${
+                  schedStatus.running ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                }`}>
+                  {schedStatus.running ? <RefreshCw size={12} className="animate-spin" /> : <CheckCircle size={12} />}
+                  {schedStatus.running ? 'Running now…' : 'Idle'}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={fetchSchedStatus}
+                className="btn-secondary flex items-center gap-2 text-sm"
+                disabled={schedLoading}
+              >
+                <RefreshCw size={14} className={schedLoading ? 'animate-spin' : ''} />
+                Refresh
+              </button>
+              <button
+                onClick={handleRunNow}
+                disabled={schedRunning || schedStatus?.running}
+                className="btn-primary flex items-center gap-2 text-sm"
+              >
+                {schedRunning
+                  ? <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" />
+                  : <Play size={14} />}
+                Run Now
+              </button>
+            </div>
+          </div>
+
+          {schedMsg && (
+            <p className={`text-sm rounded-lg px-3 py-2 border ${
+              schedMsg.startsWith('✓') ? 'text-green-700 bg-green-50 border-green-200'
+              : schedMsg.startsWith('⚠') ? 'text-yellow-700 bg-yellow-50 border-yellow-200'
+              : 'text-red-600 bg-red-50 border-red-200'
+            }`}>
+              {schedMsg}
+            </p>
+          )}
+
+          {schedStatus ? (
+            <>
+              {/* Summary cards */}
+              <div className="grid sm:grid-cols-3 gap-4">
+                <div className="card flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-primary-100 text-primary-700">
+                    <Clock size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Last Run</p>
+                    <p className="text-sm font-bold text-gray-900">{fmtDate(schedStatus.last_run)}</p>
+                  </div>
+                </div>
+                <div className="card flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-primary-100 text-primary-700">
+                    <CalendarClock size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Next Run</p>
+                    <p className="text-sm font-bold text-gray-900">{fmtDate(schedStatus.next_run)}</p>
+                  </div>
+                </div>
+                <div className="card flex items-start gap-4">
+                  <div className="p-2.5 rounded-xl bg-primary-100 text-primary-700">
+                    <RefreshCw size={20} />
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Interval</p>
+                    <p className="text-sm font-bold text-gray-900">{schedStatus.interval_hours} h</p>
+                    <p className="text-xs text-gray-400">
+                      {schedStatus.interval_hours === 168 ? '(weekly)' :
+                       schedStatus.interval_hours === 24  ? '(daily)'  :
+                       schedStatus.interval_hours === 1   ? '(hourly)' : ''}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Interval setter */}
+              <div className="card">
+                <h3 className="font-semibold text-gray-800 mb-3">Change Interval</h3>
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      max={8760}
+                      value={schedInterval}
+                      onChange={(e) => setSchedInterval(e.target.value)}
+                      className="border border-gray-300 rounded-lg px-3 py-1.5 w-24 text-sm focus:outline-none focus:ring-2 focus:ring-primary-400"
+                    />
+                    <span className="text-sm text-gray-500">hours</span>
+                  </div>
+                  <div className="flex gap-2">
+                    {[{ label: 'Hourly', h: 1 }, { label: 'Daily', h: 24 }, { label: 'Weekly', h: 168 }].map(({ label, h }) => (
+                      <button
+                        key={h}
+                        onClick={() => setSchedInterval(String(h))}
+                        className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${
+                          schedInterval === String(h)
+                            ? 'border-primary-500 bg-primary-50 text-primary-700'
+                            : 'border-gray-200 text-gray-500 hover:bg-gray-50'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={handleSetInterval} className="btn-secondary text-sm">
+                    Apply
+                  </button>
+                </div>
+              </div>
+
+              {/* Last run results */}
+              {Object.keys(schedStatus.last_results).length > 0 && (
+                <div className="card">
+                  <h3 className="font-semibold text-gray-800 mb-3">Last Run — Store Results</h3>
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                    {Object.entries(schedStatus.last_results).map(([store, res]) => {
+                      if (store.startsWith('__')) return null;
+                      const ok = res.status === 'ok';
+                      return (
+                        <div key={store} className="flex items-center gap-3 p-3 rounded-lg border">
+                          <div className={`p-1.5 rounded-lg ${ok ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>
+                            {ok ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-800">{store}</p>
+                            <p className="text-xs text-gray-400">
+                              {ok ? `${res.count} phones` : res.error?.slice(0, 50) ?? 'Error'}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {schedStatus.last_results['__pipeline_error__'] && (
+                    <div className="mt-3 flex items-start gap-2 p-3 rounded-lg bg-red-50 border border-red-200">
+                      <AlertTriangle size={16} className="text-red-500 mt-0.5 shrink-0" />
+                      <p className="text-xs text-red-700">{schedStatus.last_results['__pipeline_error__'] as unknown as string}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Activity log */}
+              {schedStatus.logs.length > 0 && (
+                <div className="card">
+                  <h3 className="font-semibold text-gray-800 mb-3">Activity Log</h3>
+                  <div className="bg-gray-950 rounded-lg p-4 max-h-72 overflow-y-auto font-mono text-xs space-y-0.5">
+                    {schedStatus.logs.map((line, i) => {
+                      const isErr  = line.includes('[ERROR]');
+                      const isWarn = line.includes('[WARN]');
+                      return (
+                        <p key={i} className={isErr ? 'text-red-400' : isWarn ? 'text-yellow-400' : 'text-green-300'}>
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="card text-center py-16 text-gray-400">
+              <CalendarClock size={48} className="mx-auto mb-3 opacity-30" />
+              <p className="font-medium">Loading scheduler status…</p>
             </div>
           )}
         </div>

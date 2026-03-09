@@ -19,6 +19,8 @@ interface AuthContextValue {
   login: (username: string, password: string) => Promise<void>;
   /** Regular user login */
   userLogin: (username: string, password: string) => Promise<void>;
+  /** Unified login – tries user first, falls back to admin. Returns the role. */
+  unifiedLogin: (username: string, password: string) => Promise<'user' | 'admin'>;
   /** Register a new user account */
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => void;
@@ -93,6 +95,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch { /* non-critical */ }
   };
 
+  /** Unified login: tries user first, falls back to admin. Returns the role. */
+  const unifiedLogin = async (username: string, password: string): Promise<'user' | 'admin'> => {
+    try {
+      const data = await loginUser(username, password);
+      _applyToken(data);
+      try {
+        const profile = await getProfile(data.access_token);
+        setAvatar(profile.avatar ?? undefined);
+      } catch { /* non-critical */ }
+      return 'user';
+    } catch {
+      // fallback: try admin login
+      const data = await loginAdmin(username, password);
+      _applyToken(data);
+      return 'admin';
+    }
+  };
+
   /** Register + auto-login */
   const register = async (payload: RegisterPayload) => {
     const data = await registerUser(payload);
@@ -112,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       user, token, loading,
       avatar, setAvatar,
-      login, userLogin, register, logout,
+      login, userLogin, unifiedLogin, register, logout,
       isAdmin: user?.role === 'admin',
       isLoggedIn: !!user,
     }}>

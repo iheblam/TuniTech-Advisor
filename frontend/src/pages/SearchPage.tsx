@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Search } from 'lucide-react';
-import { searchSmartphones } from '../api/client';
+import { searchSmartphones, trackEvent } from '../api/client';
 import type { SmartphoneDetail } from '../types';
 import PhoneCard from '../components/PhoneCard';
 import Spinner from '../components/Spinner';
@@ -36,6 +36,10 @@ export default function SearchPage() {
       );
       setResults(data.results as SmartphoneDetail[]);
       setTotal(data.total_found);
+      // Track search event for each result
+      (data.results as SmartphoneDetail[]).slice(0, 5).forEach((p) => {
+        trackEvent(p.name, 'search');
+      });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg ?? 'Search failed. Is the API running?');

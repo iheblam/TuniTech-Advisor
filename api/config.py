@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     data_path: str = "./dataset"
     unified_data_file: str = "unified_smartphones_filled.csv"
 
+    # MongoDB
+    mongodb_uri: Optional[str] = None  # set in .env or Render dashboard
+
     # Groq AI (for image search query generation)
     groq_api_key: Optional[str] = None
 

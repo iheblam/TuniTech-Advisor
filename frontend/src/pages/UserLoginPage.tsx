@@ -4,7 +4,7 @@ import { Lock, User, Smartphone, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function UserLoginPage() {
-  const { userLogin } = useAuth();
+  const { unifiedLogin } = useAuth();
   const navigate = useNavigate();
 
   const [username, setUsername] = useState('');
@@ -18,8 +18,8 @@ export default function UserLoginPage() {
     setError('');
     setLoading(true);
     try {
-      await userLogin(username, password);
-      navigate('/', { replace: true });
+      const role = await unifiedLogin(username, password);
+      navigate(role === 'admin' ? '/admin' : '/', { replace: true });
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { detail?: string } } })?.response?.data?.detail;
       setError(msg || 'Invalid username or password.');

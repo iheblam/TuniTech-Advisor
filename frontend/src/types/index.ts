@@ -136,3 +136,45 @@ export interface ChangePasswordPayload {
   current_password: string;
   new_password: string;
 }
+
+// ─── Analytics Types ──────────────────────────────────────────
+
+export interface BestValuePhone {
+  name: string;
+  price: number;
+  ram?: number;
+  storage?: number;
+  store: string;
+  url?: string;
+}
+
+export interface BrandStat {
+  brand: string;
+  count: number;
+  share_pct: number;
+  avg_price: number;
+  min_price: number;
+  max_price: number;
+  best_value_phone: BestValuePhone | null;
+}
+
+export interface BrandAnalyticsResponse {
+  total_phones: number;
+  brands: BrandStat[];
+}
+
+export interface SegmentStat { label: string; count: number; }
+export interface OsStat      { os: string;    count: number; }
+export interface NetworkStat { type: string;  count: number; }
+export interface StoreStat   { store: string; count: number; avg_price: number; }
+
+export interface MarketOverviewResponse {
+  total_phones: number;
+  five_g_pct: number;
+  price_summary: { min: number; max: number; mean: number; median: number };
+  price_segments: SegmentStat[];
+  os_distribution: OsStat[];
+  network_stats: NetworkStat[];
+  store_stats: StoreStat[];
+  spec_averages: Record<string, number>;
+}

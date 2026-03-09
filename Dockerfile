@@ -20,6 +20,13 @@ COPY mlruns/     ./mlruns/
 COPY train_model.py .
 COPY run_api.py .
 
+# Seed community data (reviews, trending, price history, users).
+# On Render free tier the container filesystem resets on each deploy,
+# so baking the JSON files in gives a known baseline after every deploy.
+# On docker-compose the ./data bind-mount overlays this at runtime.
+RUN mkdir -p /app/data
+COPY data/       ./data/
+
 # Expose the API port
 EXPOSE 8000
 

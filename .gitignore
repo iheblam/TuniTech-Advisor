@@ -54,6 +54,11 @@ dataset/tunisianet_smartphones_completed.csv
 .env
 .env.local
 
+# Community data (seed files ARE committed so the Docker image has a baseline).
+# Sensitive production data will reset on each Render deploy anyway (ephemeral FS).
+# Uncomment the line below if you want git to ignore runtime data changes:
+# data/
+
 # Node / Frontend
 node_modules/
 frontend/dist/

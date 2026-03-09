@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -6,12 +6,17 @@ import RecommendPage from './pages/RecommendPage';
 import PredictPage from './pages/PredictPage';
 import SearchPage from './pages/SearchPage';
 import ComparePage from './pages/ComparePage';
-import LoginPage from './pages/LoginPage';
 import UserLoginPage from './pages/UserLoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminPage from './pages/AdminPage';
 import ProfilePage from './pages/ProfilePage';
+import BrandAnalyticsPage from './pages/BrandAnalyticsPage';
+import MarketDashboardPage from './pages/MarketDashboardPage';
+import BudgetOptimizerPage from './pages/BudgetOptimizerPage';
+import UseCasePage from './pages/UseCasePage';
+import TrendingPage from './pages/TrendingPage';
 import ProtectedRoute from './components/ProtectedRoute';
+import RequireLogin from './components/RequireLogin';
 import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
@@ -22,27 +27,30 @@ export default function App() {
           <Navbar />
           <main className="flex-1">
             <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/recommend" element={<RecommendPage />} />
-              <Route path="/predict" element={<PredictPage />} />
-              <Route path="/search" element={<SearchPage />} />
-              <Route path="/compare" element={<ComparePage />} />
-              {/* User auth */}
+              {/* ── Public routes (no login needed) ── */}
               <Route path="/login" element={<UserLoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
-              {/* User profile */}
-              <Route path="/profile" element={
-                <ProtectedRoute requireAdmin={false}>
-                  <ProfilePage />
-                </ProtectedRoute>
-              } />
-              {/* Admin (URL known only to admins – no link in UI) */}
-              <Route path="/admin/login" element={<LoginPage />} />
-              <Route path="/admin" element={
-                <ProtectedRoute>
-                  <AdminPage />
-                </ProtectedRoute>
-              } />
+              <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+
+              {/* ── All other routes require login ── */}
+              <Route element={<RequireLogin />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/recommend" element={<RecommendPage />} />
+                <Route path="/predict" element={<PredictPage />} />
+                <Route path="/search" element={<SearchPage />} />
+                <Route path="/compare" element={<ComparePage />} />
+                <Route path="/brands" element={<BrandAnalyticsPage />} />
+                <Route path="/market" element={<MarketDashboardPage />} />
+                <Route path="/trending" element={<TrendingPage />} />
+                <Route path="/budget" element={<BudgetOptimizerPage />} />
+                <Route path="/use-case" element={<UseCasePage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/admin" element={
+                  <ProtectedRoute>
+                    <AdminPage />
+                  </ProtectedRoute>
+                } />
+              </Route>
             </Routes>
           </main>
           <Footer />
