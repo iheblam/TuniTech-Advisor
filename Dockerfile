@@ -16,16 +16,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY api/        ./api/
 COPY dataset/    ./dataset/
 COPY models/     ./models/
-COPY mlruns/     ./mlruns/
 COPY train_model.py .
 COPY run_api.py .
 
-# Seed community data (reviews, trending, price history, users).
-# On Render free tier the container filesystem resets on each deploy,
-# so baking the JSON files in gives a known baseline after every deploy.
-# On docker-compose the ./data bind-mount overlays this at runtime.
+# mlruns is gitignored – create an empty directory so MLflow can write to it
+RUN mkdir -p /app/mlruns
+
+# data/ is no longer needed in the image – all persistent data lives in MongoDB
 RUN mkdir -p /app/data
-COPY data/       ./data/
 
 # Expose the API port
 EXPOSE 8000
