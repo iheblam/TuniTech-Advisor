@@ -209,13 +209,13 @@ export default function ComparePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900">Compare Smartphones</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Compare Smartphones</h1>
         <p className="text-gray-500 mt-1">Pick up to 4 phones and compare them side by side.</p>
       </div>
 
       {error && <ErrorMsg message={error} />}
 
-      <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+      <div className="grid md:grid-cols-[320px_1fr] lg:grid-cols-[380px_1fr] gap-6 md:gap-8 items-start">
         {/* ── Left: search + selection ── */}
         <div className="space-y-5">
           <div className="card space-y-3">

@@ -235,7 +235,7 @@ export default function AdminPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Admin Panel</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Admin Panel</h1>
           <p className="text-gray-500 mt-1">
             Logged in as <span className="font-semibold text-primary-600">{user?.username}</span>
           </p>
@@ -260,7 +260,7 @@ export default function AdminPage() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-6 border-b border-gray-200">
+      <div className="flex gap-1 mb-6 border-b border-gray-200 overflow-x-auto">
         {TABS.map((t) => (
           <button
             key={t.id}

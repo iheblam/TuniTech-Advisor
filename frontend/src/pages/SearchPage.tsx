@@ -51,7 +51,7 @@ export default function SearchPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900">Search Smartphones</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Search Smartphones</h1>
         <p className="text-gray-500 mt-1">Search by model name or brand across all Tunisian stores.</p>
       </div>
 
@@ -73,7 +73,7 @@ export default function SearchPage() {
         </div>
         <input
           type="number"
-          className="input w-32"
+          className="input w-full sm:w-32"
           placeholder="Min price"
           value={minPrice}
           min={0}
@@ -81,14 +81,14 @@ export default function SearchPage() {
         />
         <input
           type="number"
-          className="input w-32"
+          className="input w-full sm:w-32"
           placeholder="Max price"
           value={maxPrice}
           min={0}
           onChange={(e) => setMaxPrice(e.target.value)}
         />
         <select
-          className="input w-40"
+          className="input w-full sm:w-40"
           value={selectedStore}
           onChange={(e) => setSelectedStore(e.target.value)}
         >

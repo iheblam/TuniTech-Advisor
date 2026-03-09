@@ -101,7 +101,7 @@ export default function UseCasePage() {
           <div className="p-2.5 rounded-xl bg-primary-100 text-primary-700">
             <Target size={22} />
           </div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Find Your Perfect Phone</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Find Your Perfect Phone</h1>
         </div>
         <p className="text-gray-500 max-w-xl">
           Tell us how you use your phone — we'll match you with the best options from Tunisian stores.

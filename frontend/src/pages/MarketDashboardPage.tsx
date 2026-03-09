@@ -82,7 +82,7 @@ export default function MarketDashboardPage() {
 
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-extrabold text-neutral-900 flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 flex items-center gap-3">
             <ShoppingBag className="text-primary-600" size={30} />
             Market Dashboard
           </h1>
@@ -138,10 +138,10 @@ export default function MarketDashboardPage() {
         )}
 
         {/* Price segments + OS distribution */}
-        <div className="grid lg:grid-cols-5 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
 
           {/* Price segments bar chart */}
-          <div className="lg:col-span-3 bg-cozy-card border border-cozy-border rounded-2xl p-5 shadow-sm">
+          <div className="md:col-span-1 lg:col-span-3 bg-cozy-card border border-cozy-border rounded-2xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-neutral-800 mb-4">Phones by Price Segment</h2>
             <ResponsiveContainer width="100%" height={260}>
               <BarChart data={price_segments} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
@@ -158,7 +158,7 @@ export default function MarketDashboardPage() {
           </div>
 
           {/* OS distribution pie */}
-          <div className="lg:col-span-2 bg-cozy-card border border-cozy-border rounded-2xl p-5 shadow-sm">
+          <div className="md:col-span-1 lg:col-span-2 bg-cozy-card border border-cozy-border rounded-2xl p-5 shadow-sm">
             <h2 className="text-base font-bold text-neutral-800 mb-4">OS Distribution</h2>
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
@@ -200,7 +200,7 @@ export default function MarketDashboardPage() {
                 <BarChart data={store_stats} layout="vertical" margin={{ left: 10, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e8ddd0" />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis dataKey="store" type="category" width={110} tick={{ fontSize: 12, fill: '#44403c' }} />
+                  <YAxis dataKey="store" type="category" width={80} tick={{ fontSize: 11, fill: '#44403c' }} />
                   <Tooltip
                     formatter={(v: unknown) => [`${v} phones`, 'Count']}
                     contentStyle={{ borderRadius: 10, border: '1px solid #e8ddd0', background: '#fffaf4', fontSize: 12 }}
@@ -215,7 +215,7 @@ export default function MarketDashboardPage() {
                 <BarChart data={[...store_stats].sort((a,b) => b.avg_price - a.avg_price)} layout="vertical" margin={{ left: 10, right: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e8ddd0" />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis dataKey="store" type="category" width={110} tick={{ fontSize: 12, fill: '#44403c' }} />
+                  <YAxis dataKey="store" type="category" width={80} tick={{ fontSize: 11, fill: '#44403c' }} />
                   <Tooltip
                     formatter={(v: unknown) => [fmt(v as number), 'Avg Price']}
                     contentStyle={{ borderRadius: 10, border: '1px solid #e8ddd0', background: '#fffaf4', fontSize: 12 }}

@@ -63,7 +63,7 @@ export default function HomePage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
       {/* Hero */}
       <section className="text-center space-y-5">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-neutral-900 leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-neutral-900 leading-tight">
           Find Your Perfect{' '}
           <span className="text-primary-600">Smartphone</span> in Tunisia
         </h1>

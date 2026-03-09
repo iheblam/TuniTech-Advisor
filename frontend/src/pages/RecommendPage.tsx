@@ -88,16 +88,16 @@ export default function RecommendPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       <div className="mb-8">
-        <h1 className="text-3xl font-extrabold text-gray-900">Smartphone Recommendations</h1>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Smartphone Recommendations</h1>
         <p className="text-gray-500 mt-1">Set your budget and preferences — we'll find the best options.</p>
       </div>
 
-      <div className="grid lg:grid-cols-[320px_1fr] gap-8 items-start">
+      <div className="grid md:grid-cols-[280px_1fr] lg:grid-cols-[320px_1fr] gap-6 md:gap-8 items-start">
         {/* ── Filter panel ── */}
         <aside>
           <form
             onSubmit={handleSubmit}
-            className="card space-y-5 sticky top-20"
+            className="card space-y-5 md:sticky md:top-16"
           >
             <div className="flex items-center gap-2 font-semibold text-gray-800">
               <SlidersHorizontal size={18} className="text-primary-500" />
