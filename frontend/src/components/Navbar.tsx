@@ -1,33 +1,108 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
-import { Smartphone, BarChart2, Search, Cpu, GitCompare, LogOut, UserCircle, Settings, TrendingUp, LayoutDashboard, Flame, Wallet, Target, Menu, X } from 'lucide-react';
+import { Smartphone, BarChart2, Search, Cpu, GitCompare, LogOut, UserCircle, Settings, TrendingUp, LayoutDashboard, Flame, Wallet, Target, Menu, X, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
-const links = [
-  { to: '/',          label: 'Home',      icon: <Smartphone size={15} /> },
-  { to: '/recommend', label: 'Recommend', icon: <BarChart2 size={15} /> },
-  { to: '/predict',   label: 'Predictor', icon: <Cpu size={15} /> },
-  { to: '/search',    label: 'Search',    icon: <Search size={15} /> },
-  { to: '/compare',   label: 'Compare',   icon: <GitCompare size={15} /> },
-  { to: '/trending',  label: 'Trending',  icon: <Flame size={15} /> },
-  { to: '/budget',    label: 'Budget',    icon: <Wallet size={15} /> },
-  { to: '/use-case',  label: 'For Me',    icon: <Target size={15} /> },
-  { to: '/brands',    label: 'Brands',    icon: <TrendingUp size={15} /> },
-  { to: '/market',    label: 'Market',    icon: <LayoutDashboard size={15} /> },
+const categories = [
+  {
+    label: 'Explore',
+    links: [
+      { to: '/recommend', label: 'Recommend',  icon: <BarChart2 size={15} />,   desc: 'Get personalized picks' },
+      { to: '/predict',   label: 'Predictor',  icon: <Cpu size={15} />,         desc: 'Predict phone prices' },
+      { to: '/search',    label: 'Search',     icon: <Search size={15} />,      desc: 'Find any smartphone' },
+      { to: '/compare',   label: 'Compare',    icon: <GitCompare size={15} />,  desc: 'Side-by-side comparison' },
+    ],
+  },
+  {
+    label: 'Tools',
+    links: [
+      { to: '/trending',  label: 'Trending',   icon: <Flame size={15} />,       desc: 'Hottest phones right now' },
+      { to: '/budget',    label: 'Budget',     icon: <Wallet size={15} />,      desc: 'Optimize your budget' },
+      { to: '/use-case',  label: 'For Me',     icon: <Target size={15} />,      desc: 'Match your lifestyle' },
+    ],
+  },
+  {
+    label: 'Analytics',
+    links: [
+      { to: '/brands',    label: 'Brands',     icon: <TrendingUp size={15} />,    desc: 'Brand performance data' },
+      { to: '/market',    label: 'Market',     icon: <LayoutDashboard size={15} />, desc: 'Market overview' },
+    ],
+  },
 ];
+
+
 
 /** Fallback DiceBear avatar seeded from username */
 const fallbackAvatar = (username: string) =>
   `https://api.dicebear.com/7.x/fun-emoji/svg?seed=${encodeURIComponent(username)}`;
+
+/** Single category dropdown */
+function CategoryMenu({ label, links }: { label: string; links: typeof categories[0]['links'] }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const isAnyActive = links.some(l => location.pathname === l.to || location.pathname.startsWith(l.to + '/'));
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Close on route change
+  useEffect(() => { setOpen(false); }, [location.pathname]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all select-none ${
+          isAnyActive
+            ? 'bg-primary-50 text-primary-700 font-semibold'
+            : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+        }`}
+      >
+        {label}
+        <ChevronDown size={13} className={`transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1.5 w-52 bg-white rounded-xl shadow-lg border border-neutral-100 py-1.5 z-50 animate-in fade-in slide-in-from-top-1 duration-100">
+          {links.map(l => (
+            <NavLink
+              key={l.to}
+              to={l.to}
+              className={({ isActive }) =>
+                `flex items-start gap-3 px-3 py-2.5 mx-1 rounded-lg transition-all ${
+                  isActive ? 'bg-primary-50 text-primary-700' : 'text-neutral-700 hover:bg-neutral-50'
+                }`
+              }
+            >
+              <span className="mt-0.5 shrink-0 text-primary-500">{l.icon}</span>
+              <span>
+                <span className="block text-sm font-medium leading-tight">{l.label}</span>
+                <span className="block text-xs text-neutral-400 mt-0.5">{l.desc}</span>
+              </span>
+            </NavLink>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Navbar() {
   const { isAdmin, isLoggedIn, user, avatar, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpenCats, setMobileOpenCats] = useState<Record<string, boolean>>({});
 
   // Close drawer on route change
-  useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+  useEffect(() => { setMobileOpen(false); setMobileOpenCats({}); }, [location.pathname]);
 
   const handleLogout = () => { logout(); navigate('/'); };
   const displayAvatar = avatar || (user ? fallbackAvatar(user.username) : undefined);
@@ -46,24 +121,23 @@ export default function Navbar() {
             <span className="sm:hidden">T<span className="text-primary-600">A</span></span>
           </NavLink>
 
-          {/* Desktop Links */}
+          {/* Desktop – Home + category dropdowns */}
           <div className="hidden lg:flex items-center gap-0.5">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === '/'}
-                className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-700 font-semibold'
-                      : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
-                  }`
-                }
-              >
-                {l.icon}
-                {l.label}
-              </NavLink>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+                }`
+              }
+            >
+              <Smartphone size={15} />
+              Home
+            </NavLink>
+
+            {categories.map(cat => (
+              <CategoryMenu key={cat.label} label={cat.label} links={cat.links} />
             ))}
 
             {/* Auth */}
@@ -151,24 +225,50 @@ export default function Navbar() {
         </div>
 
         <div className="overflow-y-auto h-[calc(100%-60px)] py-2">
-          {/* Nav links */}
-          <div className="px-2 space-y-0.5">
-            {links.map((l) => (
-              <NavLink
-                key={l.to}
-                to={l.to}
-                end={l.to === '/'}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-primary-50 text-primary-700 font-semibold'
-                      : 'text-neutral-600 hover:bg-neutral-100'
-                  }`
-                }
-              >
-                {l.icon}
-                {l.label}
-              </NavLink>
+          {/* Nav links grouped by category */}
+          <div className="px-2">
+            {/* Home */}
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-neutral-600 hover:bg-neutral-100'
+                }`
+              }
+            >
+              <Smartphone size={15} />
+              Home
+            </NavLink>
+
+            {categories.map(cat => (
+              <div key={cat.label} className="mt-2">
+                <button
+                  onClick={() => setMobileOpenCats(prev => ({ ...prev, [cat.label]: !prev[cat.label] }))}
+                  className="flex items-center justify-between w-full px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-neutral-400 hover:text-neutral-600"
+                >
+                  {cat.label}
+                  <ChevronDown size={12} className={`transition-transform duration-150 ${mobileOpenCats[cat.label] ? 'rotate-180' : ''}`} />
+                </button>
+                {mobileOpenCats[cat.label] && (
+                  <div className="space-y-0.5 mt-0.5">
+                    {cat.links.map(l => (
+                      <NavLink
+                        key={l.to}
+                        to={l.to}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                            isActive ? 'bg-primary-50 text-primary-700 font-semibold' : 'text-neutral-600 hover:bg-neutral-100'
+                          }`
+                        }
+                      >
+                        <span className="text-primary-400">{l.icon}</span>
+                        {l.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
 

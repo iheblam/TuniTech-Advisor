@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BarChart2,
@@ -7,6 +7,8 @@ import {
   GitCompare,
   CheckCircle2,
   XCircle,
+  Store,
+  Tag,
 } from 'lucide-react';
 import { getHealth, getDataStats, getBrands } from '../api/client';
 import type { HealthResponse, DataStats } from '../types';
@@ -16,14 +18,23 @@ export default function HomePage() {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [stats, setStats] = useState<DataStats | null>(null);
   const [brandCount, setBrandCount] = useState<number | null>(null);
+  const [brandList, setBrandList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const STORES = [
+    'Tunisianet',
+    'Mytek',
+    'SpaceNet',
+    'BestBuyTunisie',
+    'BestPhone',
+  ];
 
   useEffect(() => {
     setLoading(true);
     Promise.allSettled([getHealth(), getDataStats(), getBrands()]).then(([h, s, b]) => {
       if (h.status === 'fulfilled') setHealth(h.value);
       if (s.status === 'fulfilled') setStats(s.value);
-      if (b.status === 'fulfilled') setBrandCount(b.value.total);
+      if (b.status === 'fulfilled') { setBrandCount(b.value.total); setBrandList(b.value.brands); }
       setLoading(false);
     });
   }, []);
@@ -127,17 +138,29 @@ export default function HomePage() {
         <section>
           <h2 className="text-2xl font-bold text-neutral-800 mb-6 text-center">Dataset at a glance</h2>
           <div className="grid sm:grid-cols-3 gap-5">
-            <StatCard
+            {/* Total phones – plain count-up */}
+            <CountUpCard
               label="Total Phones"
-              value={Number(stats.total_smartphones ?? 0).toLocaleString()}
+              target={Number(stats.total_smartphones ?? 0)}
+              suffix=" phones"
+              hint="indexed across all stores"
             />
-            <StatCard
+            {/* Stores – flip card */}
+            <FlipCard
               label="Stores Covered"
-              value="5"
+              value={5}
+              icon={<Store size={18} className="text-primary-500" />}
+              backTitle="Where we scrape"
+              items={STORES.map((s, i) => ({ label: s, color: STORE_COLORS[i] }))}
             />
-            <StatCard
+            {/* Brands – flip card with pill cloud */}
+            <FlipCard
               label="Brands Available"
-              value={brandCount != null ? String(brandCount) : '–'}
+              value={brandCount ?? 0}
+              icon={<Tag size={18} className="text-primary-500" />}
+              backTitle="All brands"
+              items={brandList.map((b) => ({ label: b, color: 'bg-neutral-100 text-neutral-700' }))}
+              pillCloud
             />
           </div>
         </section>
@@ -155,11 +178,146 @@ function StatusPill({ ok, label }: { ok: boolean; label: string }) {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string }) {
+const STORE_COLORS = [
+  'bg-orange-100 text-orange-700',
+  'bg-purple-100 text-purple-700',
+  'bg-blue-100 text-blue-700',
+  'bg-yellow-100 text-yellow-800',
+  'bg-green-100 text-green-700',
+];
+
+// ── Count-up card ────────────────────────────────────────────────────────
+function CountUpCard({ label, target, suffix, hint }: {
+  label: string; target: number; suffix?: string; hint?: string;
+}) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true;
+        const duration = 1200;
+        const steps = 40;
+        const step = target / steps;
+        let current = 0;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) { setCount(target); clearInterval(timer); }
+          else setCount(Math.round(current));
+        }, duration / steps);
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target]);
+
   return (
-    <div className="card text-center border-neutral-100">
-      <p className="text-3xl font-extrabold text-primary-600">{value}</p>
-      <p className="text-sm text-neutral-500 mt-1">{label}</p>
+    <div ref={ref} className="card text-center border-neutral-100 flex flex-col items-center justify-center gap-1">
+      <p className="text-4xl font-extrabold text-primary-600 tabular-nums">
+        {count.toLocaleString()}
+        {suffix && <span className="text-base font-semibold text-neutral-400">{suffix}</span>}
+      </p>
+      <p className="text-sm font-semibold text-neutral-700">{label}</p>
+      {hint && <p className="text-xs text-neutral-400">{hint}</p>}
+    </div>
+  );
+}
+
+// ── Flip card ──────────────────────────────────────────────────────────
+function FlipCard({ label, value, icon, backTitle, items, pillCloud }: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  backTitle: string;
+  items: { label: string; color: string }[];
+  pillCloud?: boolean;
+}) {
+  const [flipped, setFlipped] = useState(false);
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true;
+        const duration = 900;
+        const steps = 30;
+        const step = value / steps;
+        let current = 0;
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= value) { setCount(value); clearInterval(timer); }
+          else setCount(Math.round(current));
+        }, duration / steps);
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [value]);
+
+  return (
+    <div
+      ref={ref}
+      className="h-40 cursor-pointer"
+      style={{ perspective: '1000px' }}
+      onMouseEnter={() => setFlipped(true)}
+      onMouseLeave={() => setFlipped(false)}
+    >
+      <div
+        className="relative w-full h-full transition-transform duration-500"
+        style={{ transformStyle: 'preserve-3d', transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+      >
+        {/* Front */}
+        <div
+          className="absolute inset-0 card border-neutral-100 flex flex-col items-center justify-center gap-1 select-none"
+          style={{ backfaceVisibility: 'hidden' }}
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-1">{icon}</div>
+          <p className="text-4xl font-extrabold text-primary-600 tabular-nums">{count}</p>
+          <p className="text-sm font-semibold text-neutral-700">{label}</p>
+          <p className="text-xs text-neutral-400">hover to reveal →</p>
+        </div>
+
+        {/* Back */}
+        <div
+          className="absolute inset-0 card border-primary-100 bg-primary-50 flex flex-col overflow-hidden select-none"
+          style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+        >
+          <p className="text-xs font-semibold text-primary-500 uppercase tracking-wider px-4 pt-3 pb-2 border-b border-primary-100">
+            {backTitle}
+          </p>
+          <div className="flex-1 overflow-y-auto px-3 py-2">
+            {pillCloud ? (
+              <div className="flex flex-wrap gap-1.5">
+                {items.map((item) => (
+                  <span
+                    key={item.label}
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${item.color}`}
+                  >
+                    {item.label}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <ul className="space-y-1.5">
+                {items.map((item) => (
+                  <li key={item.label} className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${item.color.replace('text-', 'bg-').split(' ')[0]}`} />
+                    <span className={`text-sm font-medium px-2 py-0.5 rounded-lg ${item.color}`}>{item.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

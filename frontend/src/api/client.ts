@@ -210,6 +210,43 @@ export const getPhoneImage = (
 };
 
 // ─── Community ────────────────────────────────────────────────
+export interface PhoneSuggestion {
+  model: string;
+  brand: string;
+  confidence: 'high' | 'medium' | 'low';
+}
+
+export const identifyPhone = (
+  token: string,
+  query: string,
+): Promise<PhoneSuggestion> =>
+  http
+    .post<PhoneSuggestion>('/community/identify-phone', { query }, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((r) => r.data);
+
+export interface DetailedReviewPayload {
+  phone_name: string;
+  years_owned?: string;
+  performance: number;
+  battery: number;
+  camera: number;
+  durability: number;
+  review?: string;
+}
+
+export const submitUserPhoneReview = (
+  token: string,
+  payload: DetailedReviewPayload,
+): Promise<{ id: string; username: string; rating: number; comment: string; date: string }> =>
+  http
+    .post('/community/user-phone-review', payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+    .then((r) => r.data);
+
+// ─── Community ────────────────────────────────────────────────
 
 export const getReviews = (phoneName: string) =>
   http.get(`/community/reviews/${encodeURIComponent(phoneName)}`).then((r) => r.data as {

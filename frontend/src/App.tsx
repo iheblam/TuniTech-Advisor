@@ -17,6 +17,7 @@ import UseCasePage from './pages/UseCasePage';
 import TrendingPage from './pages/TrendingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import RequireLogin from './components/RequireLogin';
+import PhoneReviewPrompt from './components/PhoneReviewPrompt';
 import { AuthProvider } from './context/AuthContext';
 
 export default function App() {
@@ -54,6 +55,7 @@ export default function App() {
             </Routes>
           </main>
           <Footer />
+          <PhoneReviewPrompt />
         </div>
       </AuthProvider>
     </BrowserRouter>
